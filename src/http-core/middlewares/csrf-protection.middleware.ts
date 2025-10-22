@@ -41,7 +41,7 @@ export class CsrfProtectionMiddleware implements AsyncHttpMiddleware {
       assert(token && expiresAt, 'Invalid CSRF token format');
       const expiryTime = parseInt(expiresAt, CSRF_TOKEN_RADIX);
       const changeTime = DateTime.fromMillis(expiryTime).minus({ hours: 6 }).toMillis();
-      if (changeTime > Date.now()) shouldSetCSRFToken = true;
+      if (changeTime < Date.now()) shouldSetCSRFToken = true;
     }
 
     if (shouldSetCSRFToken) {
