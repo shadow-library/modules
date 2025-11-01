@@ -40,7 +40,7 @@
         "typescript-eslint": "^8.46.0",
       },
       "peerDependencies": {
-        "@shadow-library/app": "^1.1.0",
+        "@shadow-library/app": "^1.1.1",
         "@shadow-library/class-schema": "^0.0.12",
         "@shadow-library/common": "^1.1.1",
         "@shadow-library/fastify": "^1.0.1",
