@@ -2,7 +2,7 @@
  * Importing npm packages
  */
 import { Inject, Injectable } from '@shadow-library/app';
-import { Logger, MaybeNull } from '@shadow-library/common';
+import { Logger, MaybeNull, NeverError } from '@shadow-library/common';
 import Memcached from 'memcached';
 
 /**
@@ -51,12 +51,12 @@ export class MemcacheService implements ICacheStore {
   }
 
   /** Stores data exclusively in Memcached */
-  async set<T = any>(key: string, value: T, lifetime = 0): Promise<void> {
+  async set<T = any>(key: string, value: T, ttlSeconds = 0): Promise<void> {
     if (!this.memcached) return;
     return new Promise<void>((resolve, reject) => {
-      this.memcached?.set(key, value, lifetime, err => {
+      this.memcached?.set(key, value, ttlSeconds, err => {
         if (err) return reject(err);
-        this.logger.debug(`cache set for key: ${key}`, { value, lifetime });
+        this.logger.debug(`cache set for key: ${key}`, { value, lifetime: ttlSeconds });
         resolve();
       });
     });
@@ -95,6 +95,7 @@ export class MemcacheService implements ICacheStore {
         }
 
         this.logger.error(`Unexpected value returned from Memcached increment for key: ${key}`, { value: result });
+        return reject(new NeverError(`Unexpected value returned from Memcached increment for key '${key}': ${result}`));
       });
     });
   }
@@ -120,6 +121,7 @@ export class MemcacheService implements ICacheStore {
         }
 
         this.logger.error(`Unexpected value returned from Memcached decrement for key: ${key}`, { value: result });
+        return reject(new NeverError(`Unexpected value returned from Memcached decrement for key '${key}': ${result}`));
       });
     });
   }
