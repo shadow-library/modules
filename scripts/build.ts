@@ -38,7 +38,7 @@ const distPackageJson = structuredClone(packageJson);
 distPackageJson.main = './cjs/index.js';
 distPackageJson.module = './esm/index.js';
 distPackageJson.types = './esm/index.d.ts';
-distPackageJson.exports = { '.': { import: './esm/index.js', require: './cjs/index.js' } };
+distPackageJson.exports = { '.': { import: './esm/index.js', require: './cjs/index.js', types: './esm/index.d.ts' } };
 distPackageJson.typesVersions = { '*': {} };
 for (const subPath of subPathExports) {
   const types = `./esm/${subPath}/index.d.ts`;
