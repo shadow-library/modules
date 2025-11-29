@@ -24,8 +24,13 @@ export class CsrfProtectionMiddleware implements AsyncHttpMiddleware {
 
   constructor(private readonly csrfTokenService: CSRFTokenService) {}
 
+  private hasCookies(cookies: Record<string, string | undefined>): boolean {
+    for (const _ in cookies) return true;
+    return false;
+  }
+
   async use(request: HttpRequest, response: HttpResponse): Promise<void> {
-    if (Object.keys(request.cookies).length === 0) return;
+    if (!this.hasCookies(request.cookies)) return;
     if (!Config.isProd() && !Config.get('http-core.csrf.enabled')) return;
 
     const result = this.csrfTokenService.validateToken(request);

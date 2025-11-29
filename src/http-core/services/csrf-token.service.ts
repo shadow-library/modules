@@ -52,7 +52,9 @@ export class CSRFTokenService {
   private readonly logger = Logger.getLogger(LOGGER_NAMESPACE, CSRFTokenService.name);
 
   constructor(@Inject(HTTP_CORE_CONFIGS) options: HttpCoreModuleOptions) {
-    this.options = options.csrf;
+    const cookieName = options.csrf.cookieName.toLowerCase();
+    const headerName = options.csrf.headerName.toLowerCase();
+    this.options = { ...options.csrf, cookieName, headerName };
   }
 
   generateToken(): CSRFCookie {
@@ -66,13 +68,13 @@ export class CSRFTokenService {
   }
 
   validateToken(request: HttpRequest): CSRFTokenValidationResult {
-    const headerToken = request.headers['x-csrf-token'];
+    const headerToken = request.headers[this.options.headerName];
     if (!headerToken || Array.isArray(headerToken)) {
       this.logger.debug('No or Invalid CSRF token found in request headers');
       return { isValid: false };
     }
 
-    const csrfCookie = request.cookies['csrf-token'];
+    const csrfCookie = request.cookies[this.options.cookieName];
     if (!csrfCookie) {
       this.logger.debug('No CSRF token found in cookies');
       return { isValid: false, reason: 'missing' };
