@@ -95,10 +95,14 @@ export class HttpCoreModule implements OnModuleInit {
     if (existing) return existing;
 
     const existingValues = Array.from(this.schemaIdMap.values());
-    let normalized = id.replace('class-schema:', '').split(/(:|-)/g)[0] as string;
-    if (existingValues.includes(normalized)) {
-      const occurrences = existingValues.reduce((count, value) => (value === normalized ? count + 1 : count), 0);
-      normalized = normalized + occurrences;
+    let normalized = id.replace('class-schema:', '').split(/[:-]/g)[0] as string;
+    for (let index = 1; index <= 100; index++) {
+      const candidate = normalized + index;
+      if (!existingValues.includes(candidate)) {
+        normalized = candidate;
+        break;
+      }
+      if (index === 100) throw new Error(`Unable to normalize schema ID for ${id} after 100 attempts`);
     }
 
     this.schemaIdMap.set(id, normalized);
@@ -140,7 +144,7 @@ export class HttpCoreModule implements OnModuleInit {
 
   private getFastifySwaggerOptions(): FastifyDynamicSwaggerOptions {
     return {
-      openapi: this.options.openapi,
+      openapi: utils.object.omitKeys(this.options.openapi, ['enabled', 'routePrefix', 'normalizeSchemaIds']),
       refResolver: { buildLocalReference: (json, _1, _2, index) => (typeof json.$id === 'string' ? json.$id : `Fragment-${index}`) },
       transform: opts => {
         const schema = opts.schema as JSONSchema;

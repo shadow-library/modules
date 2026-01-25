@@ -473,7 +473,7 @@ describe('HttpCore Module', () => {
     async function setupCompression(enabled: boolean) {
       const HttpCoreCompress = HttpCoreModule.forRoot({
         csrf: { expiresIn: { seconds: 10 }, refreshLeeway: { second: 1 } },
-        compress: { enabled },
+        compress: { enabled, threshold: 0 },
       });
 
       @Module({ imports: [FastifyModule.forRoot({ imports: [HttpCoreCompress] })] })
@@ -487,6 +487,7 @@ describe('HttpCore Module', () => {
       await setupCompression(true);
       const response = await compressRouter.mockRequest().get('/health').headers({ 'accept-encoding': 'gzip' });
       expect(response.statusCode).toBe(200);
+      expect(response.headers['content-encoding']).toBe('gzip');
     });
 
     it('should not compress response when disabled', async () => {
