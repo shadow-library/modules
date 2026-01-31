@@ -82,7 +82,7 @@ export class HttpCoreModule implements OnModuleInit {
 
   private firstDefined(...values: (boolean | undefined)[]): boolean {
     const value = values.find(v => typeof v === 'boolean');
-    if (value == undefined) throw new InternalError('No defined boolean value found in firstDefined');
+    if (value === undefined) throw new InternalError('No defined boolean value found in firstDefined');
     return value;
   }
 

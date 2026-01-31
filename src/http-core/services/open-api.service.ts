@@ -14,7 +14,7 @@ import { OpenAPIV3 } from 'openapi-types';
  * Importing user defined packages
  */
 import { HTTP_CORE_CONFIGS } from '../http-core.constants';
-import { type HttpCoreModuleOptions, OpenAPIOptions } from '../http-core.types';
+import { type HttpCoreModuleOptions, type OpenAPIOptions } from '../http-core.types';
 
 /**
  * Defining types
