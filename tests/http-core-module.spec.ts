@@ -533,7 +533,7 @@ describe('HttpCore Module', () => {
     });
   });
 
-  describe.only('Health Check Service', () => {
+  describe('Health Check Service', () => {
     let healthApp: ShadowApplication;
     const healthPort = 18081;
     const healthHost = 'localhost';
@@ -586,7 +586,7 @@ describe('HttpCore Module', () => {
       });
 
       it('should return 503 Service Unavailable before application is ready', async () => {
-        const healthService = healthApp.select(HttpCoreModule).get(HealthService);
+        // const healthService = healthApp.select(HttpCoreModule).get(HealthService);
         // healthService['isReady'] = false;
 
         const response = await fetch(`${healthBaseUrl}/health/ready`);

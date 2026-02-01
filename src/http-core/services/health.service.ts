@@ -31,15 +31,15 @@ export class HealthService implements OnApplicationReady, OnApplicationStop {
 
   constructor() {
     if (Config.get('http-core.health.enabled')) {
-      this.server = this.createServer();
+      const hostname = Config.get('http-core.health.host');
+      const port = Config.get('http-core.health.port');
+      this.server = this.createServer(hostname, port);
       this.server?.unref();
+      this.logger.info('Health server started', { hostname, port });
     }
   }
 
-  private createServer() {
-    const hostname = Config.get('http-core.health.host');
-    const port = Config.get('http-core.health.port');
-
+  private createServer(hostname: string, port: number): HealthServer {
     switch (Config.getRuntime()) {
       case 'node': {
         const server = createServer((req, res) => {
@@ -63,7 +63,6 @@ export class HealthService implements OnApplicationReady, OnApplicationStop {
         });
 
         server.listen(port, hostname);
-        this.logger.info(`Health server is listening on http://${hostname}:${port}`);
         return server;
       }
 
