@@ -11,7 +11,7 @@ import { Response } from 'light-my-request';
 /**
  * Importing user defined packages
  */
-import { CSRFTokenService, HealthService, HttpCoreModule } from '@shadow-library/modules/http-core';
+import { CSRFTokenService, HttpCoreModule } from '@shadow-library/modules/http-core';
 
 /**
  * Defining types
