@@ -30,7 +30,7 @@ export class HealthService implements OnApplicationReady, OnApplicationStop {
   private server: HealthServer = null;
 
   constructor() {
-    Config.load('health.host', { defaultValue: '0.0.0.0' });
+    Config.load('health.host', { defaultValue: 'localhost' });
     Config.load('health.port', { validateType: 'number', defaultValue: '8081' });
     Config.load('health.enabled', { validateType: 'boolean', defaultValue: Config.isProd() ? 'true' : 'false' });
 

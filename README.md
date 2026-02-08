@@ -135,10 +135,10 @@ For features that can be toggled (Helmet, Compression, OpenAPI, CSRF), the follo
 
 ##### Health Server Configuration
 
-| Setting | Environment Variable | Default   |
-| ------- | -------------------- | --------- |
-| Host    | `HEALTH_HOST`        | `0.0.0.0` |
-| Port    | `HEALTH_PORT`        | `8081`    |
+| Setting | Environment Variable | Default     |
+| ------- | -------------------- | ----------- |
+| Host    | `HEALTH_HOST`        | `localhost` |
+| Port    | `HEALTH_PORT`        | `8081`      |
 
 #### Features in Detail
 
@@ -146,7 +146,7 @@ For features that can be toggled (Helmet, Compression, OpenAPI, CSRF), the follo
     - `GET /health/live` - Liveness probe, always returns `200 OK` with body `ok` when the server is running.
     - `GET /health/ready` - Readiness probe, returns `200 OK` with body `ok` when the application is ready, or `503 Service Unavailable` with body `not ready` during startup/shutdown.
     - Supports both `GET` and `HEAD` methods.
-    - By default, runs on `0.0.0.0:8081` (configurable via environment variables).
+    - By default, runs on `localhost:8081` (configurable via environment variables).
     - Enabled by default in production, disabled in development.
 2.  **CSRF Protection**:
     - **Disable Option**: CSRF protection can be completely disabled by setting `csrf.disabled: true` in the module configuration. When disabled, the middleware is not registered at all.
