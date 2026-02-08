@@ -131,14 +131,14 @@ For features that can be toggled (Helmet, Compression, OpenAPI, CSRF), the follo
 | Helmet        | `HTTP_CORE_HELMET_ENABLED`   | `true`               | `false`               |
 | Compression   | `HTTP_CORE_COMPRESS_ENABLED` | `true`               | `false`               |
 | OpenAPI       | `HTTP_CORE_OPENAPI_ENABLED`  | `false`              | `true`                |
-| Health Server | `HTTP_CORE_HEALTH_ENABLED`   | `true`               | `false`               |
+| Health Server | `HEALTH_ENABLED`             | `true`               | `false`               |
 
 ##### Health Server Configuration
 
-| Setting | Environment Variable    | Default     |
-| ------- | ----------------------- | ----------- |
-| Host    | `HTTP_CORE_HEALTH_HOST` | `localhost` |
-| Port    | `HTTP_CORE_HEALTH_PORT` | `8081`      |
+| Setting | Environment Variable | Default   |
+| ------- | -------------------- | --------- |
+| Host    | `HEALTH_HOST`        | `0.0.0.0` |
+| Port    | `HEALTH_PORT`        | `8081`    |
 
 #### Features in Detail
 
@@ -146,7 +146,7 @@ For features that can be toggled (Helmet, Compression, OpenAPI, CSRF), the follo
     - `GET /health/live` - Liveness probe, always returns `200 OK` with body `ok` when the server is running.
     - `GET /health/ready` - Readiness probe, returns `200 OK` with body `ok` when the application is ready, or `503 Service Unavailable` with body `not ready` during startup/shutdown.
     - Supports both `GET` and `HEAD` methods.
-    - By default, runs on `localhost:8081` (configurable via environment variables).
+    - By default, runs on `0.0.0.0:8081` (configurable via environment variables).
     - Enabled by default in production, disabled in development.
 2.  **CSRF Protection**:
     - **Disable Option**: CSRF protection can be completely disabled by setting `csrf.disabled: true` in the module configuration. When disabled, the middleware is not registered at all.
