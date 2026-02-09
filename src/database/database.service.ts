@@ -3,8 +3,9 @@
  */
 import { Inject, Injectable, OnModuleDestroy, OnModuleInit } from '@shadow-library/app';
 import { Config, InternalError, Logger, NeverError } from '@shadow-library/common';
-import Redis from 'ioredis';
-import Memcached from 'memcached';
+import { type Logger as DrizzleLogger } from 'drizzle-orm';
+import type Redis from 'ioredis';
+import type Memcached from 'memcached';
 
 /**
  * Importing user defined packages
@@ -23,6 +24,10 @@ interface DrizzleDriver {
 }
 
 export type LinkedWithParent<T, U> = T & { getParent: () => U };
+
+export interface QueryLogger extends DrizzleLogger {
+  isEnabled: boolean;
+}
 
 /**
  * Declaring the constants
@@ -46,29 +51,55 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     return resolved;
   }
 
-  private getQueryLogger() {
+  private getQueryLogger(): QueryLogger {
+    const isLogEnabled = !Config.isProd() && (Config.get('log.level') === 'debug' || Config.get('log.level') === 'silly');
+    if (!isLogEnabled) return { isEnabled: false, logQuery: () => {} }; // eslint-disable-line @typescript-eslint/no-empty-function
+
     return {
+      isEnabled: true,
       logQuery: (query: string, params: unknown[]) => {
+        /**
+         * Substituting parameters from the last to the first to avoid replacing $10 as $1 followed by a literal 0.
+         * This is a simple substitution and may not cover all edge cases, but it provides more readable logs for most queries.
+         */
         let formattedQuery = query;
-        params.forEach((param, index) => {
+        for (let index = params.length - 1; index >= 0; index--) {
+          const param = params[index];
           const value = typeof param === 'string' ? `'${param}'` : String(param);
           formattedQuery = formattedQuery.replace(`$${index + 1}`, value);
-        });
+        }
         this.logger.debug(`SQL: ${formattedQuery}`);
       },
     };
+  }
+
+  private async importDrizzleDriver(driverName: string): Promise<DrizzleDriver> {
+    try {
+      const mod = (await import(`drizzle-orm/${driverName}`)) as DrizzleDriver;
+      if (!mod || typeof mod.drizzle !== 'function') throw new InternalError(`Invalid drizzle driver module imported for type '${driverName}'`);
+      return mod;
+    } catch (error) {
+      this.logger.error(`Failed to import drizzle driver for type '${driverName}'`, error);
+      let message = `Failed to load Drizzle driver for type '${driverName}'. Ensure the driver sub-package is installed.`;
+      if (error instanceof Error && 'code' in error && (error as Record<string, unknown>).code === 'MODULE_NOT_FOUND') {
+        message += ` The missing module is likely 'drizzle-orm/${driverName}', so check that this sub-package is included in your dependencies.`;
+      }
+      message += ` Original error: ${error instanceof Error ? error.message : String(error)}`;
+      throw new InternalError(message);
+    }
   }
 
   async onModuleInit(): Promise<void> {
     if (this.options.postgres) {
       this.logger.debug('Initializing Drizzle client with config', { config: this.options.postgres });
       const postgres = this.options.postgres;
-      const logger = this.getQueryLogger();
+      const queryLogger = this.getQueryLogger();
 
-      if (postgres.type === 'custom') this.drizzleClient = postgres.factory(logger);
+      if (postgres.type === 'custom') this.drizzleClient = postgres.factory(queryLogger);
       else {
+        const mod = await this.importDrizzleDriver(postgres.type);
+        const logger = queryLogger.isEnabled ? this.logger : false;
         const connectionUrl = this.resolveConnectionUrl('PostgreSQL', postgres.url, 'database.postgres.url');
-        const mod = (await import(`drizzle-orm/${postgres.type}`)) as DrizzleDriver;
         const connection = postgres.connection ? { url: connectionUrl, ...postgres.connection } : connectionUrl;
         this.drizzleClient = mod.drizzle({ schema: postgres.schema, logger, connection });
       }
@@ -83,7 +114,8 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       this.logger.debug('Initializing Redis client with config', { config });
       const { url, options = {} } = config;
       const connectionUrl = this.resolveConnectionUrl('Redis', url, 'database.redis.url');
-      this.redisClient = new Redis(connectionUrl, options);
+      const { default: RedisClient } = await import('ioredis');
+      this.redisClient = new RedisClient(connectionUrl, options);
       await new Promise<void>((resolve, reject) => {
         if (!this.redisClient) throw new NeverError('Redis client is in an impossible state: undefined after instantiation');
         this.redisClient.once('ready', () => resolve());
@@ -98,7 +130,8 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       this.logger.debug('Initializing Memcached client with config', { config });
       const { hosts, options } = config;
       const connectionHosts = this.resolveConnectionUrl('Memcached', hosts, 'database.memcache.hosts');
-      this.memcacheClient = options ? new Memcached(connectionHosts, options) : new Memcached(connectionHosts);
+      const { default: MemcachedClient } = await import('memcached');
+      this.memcacheClient = options ? new MemcachedClient(connectionHosts, options) : new MemcachedClient(connectionHosts);
       await new Promise<void>((resolve, reject) => {
         if (!this.memcacheClient) throw new NeverError('Memcached client is in an impossible state: undefined after instantiation');
         this.memcacheClient.stats((err: Error) => (err ? reject(err) : resolve()));

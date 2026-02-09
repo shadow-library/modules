@@ -3,7 +3,7 @@
  */
 import { Injectable } from '@shadow-library/app';
 import { Logger } from '@shadow-library/common';
-import Redis from 'ioredis';
+import type Redis from 'ioredis';
 
 /**
  * Importing user defined packages

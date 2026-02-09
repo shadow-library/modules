@@ -3,7 +3,7 @@
  */
 import { Injectable } from '@shadow-library/app';
 import { Logger, MaybeNull, NeverError } from '@shadow-library/common';
-import Memcached from 'memcached';
+import type Memcached from 'memcached';
 
 /**
  * Importing user defined packages

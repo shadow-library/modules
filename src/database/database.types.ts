@@ -2,15 +2,15 @@
  * Importing npm packages
  */
 import { FactoryProvider, ModuleMetadata } from '@shadow-library/app';
-import { Logger as DrizzleLogger } from 'drizzle-orm';
-import { PgDatabase } from 'drizzle-orm/pg-core';
-import { RedisOptions } from 'ioredis';
-import Memcached from 'memcached';
+import { type PgDatabase } from 'drizzle-orm/pg-core';
+import { type RedisOptions } from 'ioredis';
+import type Memcached from 'memcached';
 import { Promisable } from 'type-fest';
 
 /**
  * Importing user defined packages
  */
+import { QueryLogger } from './database.service';
 
 /**
  * Defining types
@@ -29,7 +29,7 @@ export interface DatabaseRecords {
   drizzle?: PgDatabase<any>;
 }
 
-export type DrizzleClient = DatabaseRecords['drizzle'];
+export type DrizzleClient = Exclude<DatabaseRecords['drizzle'], undefined>;
 
 export interface PostgresError {
   errno: string;
@@ -72,7 +72,7 @@ export interface CustomPostgresConfig extends BasePostgresConfig {
   type: 'custom';
 
   /** Factory function that returns a Drizzle client instance */
-  factory: (logger: DrizzleLogger) => DrizzleClient;
+  factory: (logger: QueryLogger) => DrizzleClient;
 }
 
 export type PostgresConfig = DrizzleDriverPostgresConfig | CustomPostgresConfig;
