@@ -50,7 +50,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
 
   private resolveConnectionUrl(database: string, url: string | undefined, configKey: ConfigKey): string {
     if (url) return url;
-    Config.load(configKey, { defaultValue: DEFAULT_CONFIGS[configKey] });
+    Config.load(configKey, { defaultValue: DEFAULT_CONFIGS[configKey], isProdRequired: true });
     const resolved = Config.get(configKey);
     if (!resolved) throw new InternalError(`${database} connection URL not provided and the config value for '${configKey}' is not set`);
     return resolved;
