@@ -32,9 +32,9 @@ export interface QueryLogger extends DrizzleLogger {
 /**
  * Declaring the constants
  */
-const DEFAULT_CONFIGS: Partial<Record<ConfigKey, string>> = {
+const DEFAULT_CONFIGS: Record<ConfigKey, string> = {
   'database.postgres.url': 'postgresql://postgres:postgres@localhost/shadow_db',
-  'database.memcache.hosts': 'memcached://localhost:11211',
+  'database.memcache.hosts': 'localhost:11211',
   'database.redis.url': 'redis://localhost:6379',
 };
 
