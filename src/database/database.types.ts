@@ -18,11 +18,11 @@ import { Promisable } from 'type-fest';
 
 declare module '@shadow-library/common' {
   export interface ConfigRecords {
-    'database.postgres.url': string;
+    'database.postgres.url'?: string;
     'database.postgres.max-connections'?: number;
-    'database.postgres.lazy-connection': boolean;
-    'database.redis.url': string;
-    'database.memcache.hosts': string;
+    'database.postgres.lazy-connection'?: boolean;
+    'database.redis.url'?: string;
+    'database.memcache.hosts'?: string;
   }
 }
 
