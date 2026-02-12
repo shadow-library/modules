@@ -82,7 +82,11 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
       /** Initialize client and verify connection */
       this.postgresClient = await postgres.factory(drizzleConfig, connectionConfig);
       if (!this.postgresClient) throw new NeverError('Postgres client is in an impossible state: undefined after initialization');
-      await this.postgresClient.execute('SELECT 1');
+
+      Config.load('database.postgres.lazy-connection', { validateType: 'boolean', defaultValue: 'false' });
+      const isLazyConnection = postgres.lazyConnection ?? Config.get('database.postgres.lazy-connection');
+      if (!isLazyConnection) await this.postgresClient.execute('SELECT 1');
+
       this.logger.info('Postgres client connected');
     }
 
