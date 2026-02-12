@@ -25,7 +25,7 @@ declare module '@shadow-library/common' {
   }
 }
 
-/* eslint-disable @typescript-eslint/no-empty-object-type -- This interface is intentionally left empty to be extended by user-defined database records. */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DatabaseRecords {}
 
 type ResolveType<K extends string, Fallback> = DatabaseRecords extends Record<K, infer T> ? T : Fallback;

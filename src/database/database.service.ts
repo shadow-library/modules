@@ -45,13 +45,13 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
     if (url) return url;
     Config.load(configKey, { defaultValue: DEFAULT_CONFIGS[configKey], isProdRequired: true });
     const resolved = Config.get(configKey);
-    this.logger.debug(`Resolved ${database} connection URL from config key '${configKey}': ${resolved}`);
+    this.logger.debug(`Resolved ${database} connection URL from config key '${configKey}'`);
     if (!resolved) throw new InternalError(`${database} connection URL not provided and the config value for '${configKey}' is not set`);
     return resolved;
   }
 
   private getImportError(error: unknown, packageName: string, contextLabel: string): InternalError {
-    const isModuleNotFound = error instanceof Error && 'code' in error && (error as Record<string, unknown>).code === 'MODULE_NOT_FOUND';
+    const isModuleNotFound = typeof error === 'object' && error !== null && 'code' in error && error.code === 'ERR_MODULE_NOT_FOUND';
     const original = error instanceof Error ? error.message : String(error);
 
     let message = `Failed to load ${contextLabel}. `;
