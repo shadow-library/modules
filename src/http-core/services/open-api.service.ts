@@ -21,7 +21,7 @@ import { type HttpCoreModuleOptions, type OpenAPIOptions } from '../http-core.ty
  * Defining types
  */
 
-type ParamTypeMode = 'typed' | 'string';
+type SchemaMode = 'strict' | 'api';
 
 /**
  * Declaring the constants
@@ -99,14 +99,34 @@ export class OpenApiService {
     return { $ref: `#/components/schemas/${schemaId}` };
   }
 
+  private getSchemaMode(): SchemaMode {
+    const request = this.contextService.getRequest();
+    const mode = (request.query as Record<string, string>)?.schemaMode;
+    if (mode === 'strict' || mode === 'api') return mode;
+    return 'strict';
+  }
+
   private normalizeParamsOpenapiSpec(document: Partial<OpenAPIV3.Document>, schema: JSONSchema): JSONSchema {
     const normalizedSchema = this.normalizeOpenapiSpec(document, schema, false);
-    const request = this.contextService.getRequest();
-    const paramTypeMode = (request.query as Record<string, ParamTypeMode>)?.paramTypeMode ?? 'typed';
-    if (paramTypeMode === 'typed') return normalizedSchema;
+    const schemaMode = this.getSchemaMode();
+    if (schemaMode === 'strict') return normalizedSchema;
 
+    let requiredFields = normalizedSchema.required ?? [];
     const properties = normalizedSchema.properties ?? {};
-    for (const key in properties) properties[key] = { type: 'string', description: `Originally of type ${properties[key]?.type || properties[key]?.$ref}` };
+    for (const key in properties) {
+      const originalSchema = properties[key] as JSONSchema;
+      const updatedSchema: JSONSchema = { type: 'string', description: `Originally of type ${originalSchema.type || originalSchema.$ref}` };
+      if (originalSchema.default !== undefined) {
+        updatedSchema.default = String(originalSchema.default);
+        updatedSchema.description += `, default: ${updatedSchema.default}`;
+        requiredFields = requiredFields.filter(r => r !== key);
+      }
+      properties[key] = updatedSchema;
+    }
+
+    normalizedSchema.required = requiredFields;
+    if (normalizedSchema.required.length === 0) delete normalizedSchema.required;
+
     return normalizedSchema;
   }
 
