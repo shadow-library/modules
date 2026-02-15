@@ -111,21 +111,23 @@ export class OpenApiService {
     const schemaMode = this.getSchemaMode();
     if (schemaMode === 'strict') return normalizedSchema;
 
-    let requiredFields = normalizedSchema.required ?? [];
+    const requiredFields = new Set(normalizedSchema.required);
     const properties = normalizedSchema.properties ?? {};
     for (const key in properties) {
       const originalSchema = properties[key] as JSONSchema;
-      const updatedSchema: JSONSchema = { type: 'string', description: `Originally of type ${originalSchema.type || originalSchema.$ref}` };
+      const updatedSchema: JSONSchema = { type: 'string', description: 'Expects a' };
+      if (originalSchema.type) updatedSchema.description += ` ${originalSchema.type}.`;
+      else if (originalSchema.$ref) updatedSchema.description += `valid ${originalSchema.$ref.split('/').pop()} schema.`;
       if (originalSchema.default !== undefined) {
         updatedSchema.default = String(originalSchema.default);
-        updatedSchema.description += `, default: ${updatedSchema.default}`;
-        requiredFields = requiredFields.filter(r => r !== key);
+        updatedSchema.description += ` Defaults to ${updatedSchema.default}.`;
+        requiredFields.delete(key);
       }
       properties[key] = updatedSchema;
     }
 
-    normalizedSchema.required = requiredFields;
-    if (normalizedSchema.required.length === 0) delete normalizedSchema.required;
+    if (requiredFields.size) normalizedSchema.required = Array.from(requiredFields);
+    else delete normalizedSchema.required;
 
     return normalizedSchema;
   }
