@@ -21,8 +21,6 @@ import { type HttpCoreModuleOptions, type OpenAPIOptions } from '../http-core.ty
  * Defining types
  */
 
-type SchemaMode = 'strict' | 'api';
-
 /**
  * Declaring the constants
  */
@@ -99,31 +97,14 @@ export class OpenApiService {
     return { $ref: `#/components/schemas/${schemaId}` };
   }
 
-  private getSchemaMode(): SchemaMode {
-    const request = this.contextService.getRequest();
-    const mode = (request.query as Record<string, string>)?.schemaMode;
-    if (mode === 'strict' || mode === 'api') return mode;
-    return 'strict';
-  }
-
   private normalizeParamsOpenapiSpec(document: Partial<OpenAPIV3.Document>, schema: JSONSchema): JSONSchema {
     const normalizedSchema = this.normalizeOpenapiSpec(document, schema, false);
-    const schemaMode = this.getSchemaMode();
-    if (schemaMode === 'strict') return normalizedSchema;
 
     const requiredFields = new Set(normalizedSchema.required);
     const properties = normalizedSchema.properties ?? {};
     for (const key in properties) {
       const originalSchema = properties[key] as JSONSchema;
-      const updatedSchema: JSONSchema = { type: 'string', description: 'Expects a' };
-      if (originalSchema.type) updatedSchema.description += ` ${originalSchema.type}.`;
-      else if (originalSchema.$ref) updatedSchema.description += `valid ${originalSchema.$ref.split('/').pop()} schema.`;
-      if (originalSchema.default !== undefined) {
-        updatedSchema.default = String(originalSchema.default);
-        updatedSchema.description += ` Defaults to ${updatedSchema.default}.`;
-        requiredFields.delete(key);
-      }
-      properties[key] = updatedSchema;
+      if (originalSchema.default !== undefined) requiredFields.delete(key);
     }
 
     if (requiredFields.size) normalizedSchema.required = Array.from(requiredFields);
