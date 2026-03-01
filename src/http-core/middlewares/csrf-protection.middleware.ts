@@ -36,8 +36,8 @@ export class CsrfProtectionMiddleware implements MiddlewareGenerator {
 
   generate(): AsyncRouteHandler | undefined {
     if (this.options.csrf.disabled === true) return;
+    const isCSRFEnabled = Config.register('http-core.csrf.enabled', DEFAULT_CONFIGS['http-core.csrf.enabled']);
     return async (request, response) => {
-      const isCSRFEnabled = Config.register('http-core.csrf.enabled', DEFAULT_CONFIGS['http-core.csrf.enabled']);
       if (!this.hasCookies(request.cookies)) return;
       if (!Config.isProd() && !isCSRFEnabled) return;
 

@@ -8,7 +8,6 @@ import { FastifyApiReferenceOptions } from '@scalar/fastify-api-reference';
 import { Inject, Injectable } from '@shadow-library/app';
 import { JSONSchema } from '@shadow-library/class-schema';
 import { utils } from '@shadow-library/common';
-import { ContextService } from '@shadow-library/fastify';
 import { OpenAPIV3 } from 'openapi-types';
 
 /**
@@ -32,10 +31,7 @@ export class OpenApiService {
   private schemaCounter = 0;
   private schemaIdMap = new Map<string, string>();
 
-  constructor(
-    @Inject(HTTP_CORE_CONFIGS) options: HttpCoreModuleOptions,
-    private readonly contextService: ContextService,
-  ) {
+  constructor(@Inject(HTTP_CORE_CONFIGS) options: HttpCoreModuleOptions) {
     this.options = options.openapi;
   }
 
