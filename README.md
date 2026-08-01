@@ -1,3 +1,6 @@
+> **Archived — migrated to the [platform monorepo](https://github.com/shadow-library/platform).**
+> This code now lives at [`packages/modules`](https://github.com/shadow-library/platform/tree/main/packages/modules) with its full history; this repository is read-only.
+
 # @shadow-library/modules
 
 A collection of shared modules for the Shadow Apps ecosystem, providing reusable components for configuration management, authentication, cloud access, email, notifications, and other essential services. Designed for seamless integration across all Node.js applications following the Shadow Library architecture.
